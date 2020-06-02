@@ -1,0 +1,18 @@
+{% extends base.html %}
+{% block head %}
+<meta http-eqquiv="refresh" content="1">
+{% endblock %}
+{% block body %}
+        <h3 id="setpoints">Current Setpoints</h3>
+        <p>
+        Reactor: {{ state }} <br>
+        Temperature: <span id="temp">{{temp}}</span> / {{setpoint_T}}C
+        <br>
+        OD: <span id="OD">{{OD}}</span> / {{setpoint_OD}}
+        <br
+        Sparging: <span id="sparging">{{sparging}}</span> / {{duty_cycle}}%<br>
+        Media Pump time: {{ pump_time }} Sec</p>
+        <form action="{{ url_for('refresh') }}" method="post">
+        <button id="refresh" class="btn btn-success btn-sm">Refresh Data</button>
+        </form>
+{%endblock%}

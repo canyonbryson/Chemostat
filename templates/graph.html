@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Chemostat Graphs</title>
+{%endblock%}
+
+{% block body %}
+<div class="jumbotron text-center" style="background:none; color:white;">
+      <h2 style="margin-top:0px;">Chemostat Graphs</h2>
+    <h3>Adaptive Labratory Evolution with <i>Bacillus Subtilis</i></h3>
+ 
+<div class="row">
+    <div class="col-sm-4 text-center">
+        <h2>Graph 1</h2>
+        <p>OD vs time</p>
+    </div>
+    
+    <div class="col-sm-4 text-center">
+        <h2>Graph 2</h2>
+        <p>Temp vs Time</p>
+    </div>
+    
+    <div class="col-sm-4 text-center">
+        <h2>Graph 3</h2>
+        <p>pH vs Time</p>
+    </div>
+</div>
+</div>
+{% endblock %}
