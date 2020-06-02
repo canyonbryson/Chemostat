@@ -46,14 +46,7 @@ socketio = SocketIO(app) #create an instance of a web socket
 #db = SQLAlchemy(app)
 
 
-#db.Model.metadata.reflect(db.engine)
-#
-#class Chemostat(db, Model):
-#    __tablename__ = 'chemostat-geocoded'
-#    __table_args = {
-#        'extend_existing': True
-#        }
-#    LOC_CODE = db.Column(db.Text.primary_key= True)
+
 
 from subprocess import check_output, call #For the IP address, shutdown
 IP = check_output(['hostname', '-I']).strip().decode()
@@ -108,6 +101,7 @@ def index():
 
 @app.route('/graph')
 def graph():
+    
     return render_template('graph.html', IP = IP, pump_time = pump_time, temp = temp, sparging = duty_cycle, OD = optical_density, setpoint_T = setpoint_T, setpoint_OD = setpoint_OD, duty_cycle = duty_cycle)
 
 @app.route('/refresh', methods = ['POST', 'GET'])
@@ -163,7 +157,6 @@ def primeOD():
     value = request.form['time_OD']
     wait = int(value)
     prime_pumps(wait ,'od')
-    
     return redirect('/')
            
 @app.route('/primeIN', methods = ['POST'])
@@ -171,11 +164,7 @@ def primeIN():
     value = request.form['time_IN']
     wait = int(value)
     prime_pumps(wait ,'IN')
-#    global th
-#    th.stop()
-#    th = threading.Thread(target = prime_pumps(wait, 'od'))
-#    th.daemon = True
-#    th.start()
+
     return redirect('/')
            
 @app.route('/primeOUT', methods = ['POST'])
@@ -620,5 +609,24 @@ def heater():
                 heat = 'ON'
             time.sleep(2)
 
+def Database(): 
+        import sqlite3
+        global run, datetime, temp, optical_density, pH, duty_cycle
+        conn = sqlite3.connect('chemostatData.db')
+        c = conn.cursor()
+        c.execute("""CREATE TABLE IF NOT EXISTS chemostat (
+                    timestamp text,
+                    temp real,
+                    OD real,
+                    pH real,
+                    sparging integer
+                    )""")
+        c.execute("INSERT INTO chemostat VALUES (timestamp, temp, OD, pH, sparging)")
+        conn.commit()
+                # do that in a loop in threading ^^^
+        
+        
+        conn.close()
+            
 
 main()
