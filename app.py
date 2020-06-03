@@ -5,10 +5,7 @@ Drew Porter
 '''
 
 '''
-TODO
-
-- fit everything in lid
-- design controller container
+TO DO
 - calibrate optical density
 - web interface
 
@@ -24,6 +21,7 @@ import board
 import subprocess
 import email_test as em
 import time
+import csv
 import digitalio
 from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
@@ -34,16 +32,16 @@ import pigpio #this is just for the LED. using RPi.GPIO for everything
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 import requests
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_socketio import SocketIO, emit, send #for live data
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app) #create an instance of a web socket
 
-#from flask_sqlalchemy import SQLAlchemy # import the db ORM
-#app.config['SQLALCHEMY_DATABASE_URI'] = '\home\pi\Chemostat\data'
-#db = SQLAlchemy(app)
+from flask_sqlalchemy import SQLAlchemy # import the db ORM
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chemostatData.db'
+db = SQLAlchemy(app)
 
 
 
@@ -295,32 +293,30 @@ def prime_pumps(wait, pump):
     
 def write_data():
     while True:
-        if run == True:   
-            now = datetime.now()
-            date = now.strftime("%m-%d-%y_%H:%M:%S")
-        #         print ('\n',date)
-            file = open('{}.csv'.format(date),'w+')
-            filename = '{}.csv'.format(date)
-        #         file = open('test1.csv','w+')
-        #         filename = ('test1.csv')
-            file.write('Chemostat run of {}'.format(date))
-            file.write('\nTimestamp, Temperature, Temp Setpoint, Heater, pH, OD, OD Setpoint, Media, Sparging')
-            
-            time.sleep(10) # sleep to allow readings to become accurate
-                            # and to settle    
-            # write data to a file
-            while run == True:
-                now1 = datetime.now()
-                date1 = now1.strftime("%m-%d-%y_%H:%M:%S")
+        if run == True:    
+          fieldnames=['timestamp','temp','setpoint_T','OD','setpoint_OD','pH','sparging', 'media']
 
-                file.write('\n{0},{1},{2},{3},{4},{5},{6},{7},{8}%,'.format(date1,
-                        temp,setpoint_T,heat,pH,optical_density,setpoint_OD, media,duty_cycle))
-            
+          with open('{}.csv'.format(date),'w') as csv_file:
+            csv_writer=csv.DistWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+
+          while True:
+                with open('{}.csv'.format(date),'a') as csv_file:
+                     csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+                     now = datetime.now()
+                     date = now.strftime("%m-%d-%y_%H:%M:%S")
+                     info = {
+                              'timestamp':  date,
+                              'temp': temp,
+                              'setpoint_T':setpoint_T,
+                              'OD': optical_density,
+                              'setpoint_OD': setpoint_OD,
+                              'sparging': duty_cycle,
+                              'media':pump_time
+                              }
+                     csv_writer.writerow(info)
                 time.sleep(1)
-                
-            file.close
-            em.email(sendto, filename)
-        
+            
 def menu():
     global setpoint_T
     global setpoint_OD
@@ -609,24 +605,28 @@ def heater():
                 heat = 'ON'
             time.sleep(2)
 
-def Database(): 
-        import sqlite3
-        global run, datetime, temp, optical_density, pH, duty_cycle
-        conn = sqlite3.connect('chemostatData.db')
-        c = conn.cursor()
-        c.execute("""CREATE TABLE IF NOT EXISTS chemostat (
-                    timestamp text,
-                    temp real,
-                    OD real,
-                    pH real,
-                    sparging integer
-                    )""")
-        c.execute("INSERT INTO chemostat VALUES (timestamp, temp, OD, pH, sparging)")
-        conn.commit()
-                # do that in a loop in threading ^^^
+
         
-        
-        conn.close()
+def graph():
+  import random
+  from itertools import count
+  import pandas as pd
+  #pip install matplotlib
+  #jupitor notebooks?
+  from matplotlib import pyplot as plt
+  plt.style.use('fivethrityeight')
+  #save as png then put then on page?
+
+  x_vals = []
+  y_vals = []
+  
+  #chartist.js
+  
+  
+  plt.tight_layout()
+  plt.show()
+  
+
             
 
 main()
