@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block head %}
+        <title> Verify </title>
+{%endblock%}
+
+{% block body %}
+    <center>
+        <div class="welcomeimage">
+    <h1> Are you sure you want to quit? </h1>
+    <form action="/quit" method="POST">
+        <input type="radio" name = "answer" value="yes">Yes</input>
+        <input type="radio" name = "answer" value="no">No</input>
+        <input type="submit" value="Send"></input>
+    </form>
+        </div>
+    </center>
+{%endblock%}

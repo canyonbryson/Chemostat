@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>RPi Chemostat Control</title>
+<style>
+.switch {
+    position: relative;
+    display:inline-block;
+    width:52px;
+    height:30px;
+    }
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+    }
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left:3px;
+    bottom:3px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+    }
+
+input:checked {
+    background-color:#2196F3;
+    }
+
+.slider {
+    background-color:#2196F3;
+    }
+
+input:focus {
+    box-shadow: 0 0 1px #2196F3;
+    }
+
+.slider {
+    box-shadow: 0 0 1px #2196F3;
+    }
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(24px);
+    -ms-transform: translateX(24px);
+    transform: translateX(24px);
+    }
+
+.slider.round {
+    border-radius: 30px;
+    }
+
+.slider.round:before {
+    border-radius: 50%;
+    }
+</style>
+{%endblock%}
+
+{% block body %}
+
+<div class="jumbotron text-center" style="background:none; color:white;">
+      <h2 style="margin-top:0px;">Chemostat Control</h2>
+    <h3>Adaptive Labratory Evolution with <i>Bacillus subtilis</i></h3>
+    
+<div class="container">
+  <div class="row">
+    <div class="col-sm-4 text-center">
+        <h3 id="setpoints">Current Setpoints</h3>
+        <p>
+        Reactor: <span id="state">{{ state }}</span> <br>
+        Temperature: <span id="temp">{{temp}}</span> / {{setpoint_T}}C
+        <br>
+        OD: <span id="OD">{{OD}}</span> / {{setpoint_OD}}
+        <br>
+        Sparging: <span id="sparging">{{sparging}}</span> / 100%<br>
+        pH: <span id="pH">{{ pH }}</span>
+        <br>
+        Media Pump time: <span id="media_pump">{{ pump_time }}</span> Sec</p>
+        <form action="{{ url_for('refresh') }}" method="post">
+        <button data-refresh="please" id="refresh" class="btn btn-success btn-sm">Refresh Data</button>
+      </form></div>
+    <div class="col-sm-4 text-center">
+    <h3>Change Setpoints</h3>
+    <form action="{{ url_for('change_temp') }}" method="post">
+        <p>Temperature Setpoint</p>
+      <input type="text" name="SP_T" style="background-color:white; color:black;" placeholder="Enter new temp here..."> C</input>
+      <button class="btn btn-success btn-sm">Set</button>
+    </form>
+
+    <form action="{{ url_for('change_OD') }}" method="post">
+      
+        <p>Optical Density Setpoint</p> 
+      <input type="text" name="SP_OD" style="background-color:white; color:black;" placeholder="Enter new OD here..."></input>
+      <button class="btn btn-success btn-sm">Set</button>  
+    </form> 
+
+    <form action="{{ url_for('change_sparge') }}" method="post">
+      
+        <p>Sparging (0-100)</p>
+      <input type="text" name="SP_sparge" style="background-color:white; color:black;" placeholder="Enter new sparging here...">%</input>
+      <button class="btn btn-success btn-sm">Set</button>  
+    </form>
+    <form action="{{ url_for('media_time') }}" method="post">
+      
+        <p>Media Pump Time</p>
+      <input type="text" name="time_media" style="background-color:white; color:black;" placeholder="Enter new Media Pump Time...">Sec</input>
+      <button class="btn btn-success btn-sm">Set</button>  
+    </form>
+    <br>
+    <div style="display:inline-block;">
+    <form style="display:inline;" action="{{ url_for('start_run') }}" method="post">
+        <button class="btn btn-success btn-sm">Run</button>
+    </form>
+    <form style="display:inline;" action="{{ url_for('end_run') }}" method="post">
+        <button class="btn btn-danger btn-sm">Stop</button>
+    </form>
+    </div></div>
+    <div class="col-sm-4 text-center">
+        <h3>Other stuff</h3>
+        <p>Sterilization</p>
+        <p>Calibrate OD and pH</p>
+        <form>
+         <p>Sync Media:<span id="result"> Off</span>
+            <label class="switch">
+             <input name="syncMedia" type="checkbox"/>
+             <span class="slider round"></span>
+            </label>
+        </p></form>
+        <p>Prime/Purge: <span id="purge">{{ purge }}</span></p>
+        <form action="{{ url_for('primeOD') }}" method="post">
+        <input type="text" name="time_OD" style="background-color:white; color:black;" placeholder="Enter OD prime time...">Sec</input>
+        <button class="btn btn-success btn-sm">OD Pump</button><br><br>
+        </form>
+        
+        <form action="{{ url_for('primeIN') }}" method="post">
+        <input type="text" name="time_IN" style="background-color:white; color:black;" placeholder="Enter pump In time...">Sec</input>
+        <button class="btn btn-success btn-sm">Media In</button><br><br>
+        </form>
+        
+        <form action="{{ url_for('primeOUT') }}" method="post">
+        <input type="text" name="time_OUT" style="background-color:white; color:black;" placeholder="Enter pump Out time...">Sec</input>
+        <button class="btn btn-success btn-sm">Media Out</button><br><br>
+        </form>
+        <form action="{{ url_for('powerOFF') }}" method="post">
+        <button class="btn btn-danger btn-sm">Power Off</button>
+        </form>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+</div>
+{%endblock%}
